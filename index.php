@@ -110,6 +110,20 @@ function generateSamlResponse($requestId, $AssertionConsumerServiceURL, $attribu
 	$responseId = generateRand(10);
 	$assertionId = generateRand(10);
 
+	if(is_array($attributeValue)) {
+		$attributesValues = '';
+		foreach($attributeValue as $value) {
+			$attributesValues .=
+'      <saml:AttributeValue xsi:type="xs:string">'.$value.'</saml:AttributeValue>
+';
+		}
+	}
+	else {
+		$attributesValues = 
+'      <saml:AttributeValue xsi:type="xs:string">'.$attributeValue.'</saml:AttributeValue>
+';
+	}
+
 	$samlResponseXML = <<<SAMLXML
 <?xml version="1.0" encoding="UTF-8"?>
 <samlp:Response xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" Consent="urn:oasis:names:tc:SAML:2.0:consent:unspecified" Destination="$AssertionConsumerServiceURL" ID="$responseId" InResponseTo="$requestId" IssueInstant="$issueInstant" Version="2.0">
@@ -139,7 +153,7 @@ function generateSamlResponse($requestId, $AssertionConsumerServiceURL, $attribu
   </saml:AuthnStatement>
   <saml:AttributeStatement xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <saml:Attribute Name="$attributeName" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">
-      <saml:AttributeValue xsi:type="xs:string">$attributeValue</saml:AttributeValue>
+$attributesValues
     </saml:Attribute>
   </saml:AttributeStatement>
 </saml:Assertion>
@@ -218,7 +232,7 @@ body {
 	position: absolute;
 	left: -5%;
 	top: -5%;
-	-webkit-user-select: none;
+	pointer-events: none;
 }
 
 input[type=text], input[type=password], textarea {
@@ -252,7 +266,7 @@ if(isset($_REQUEST['ctemail']) || isset($_REQUEST['FrEduVecteur'])) {
 	}
 	else {
 		$attributeName = 'FrEduVecteur';
-		$attributeValue = $_REQUEST['FrEduVecteur'];
+		$attributeValue = explode("\n", $_REQUEST['FrEduVecteur']);
 	}
 
 	$privateKey = file_get_contents("aaf-sso.key");
@@ -284,7 +298,9 @@ else {
   <tr><td>[UAI]:</td><td style="text-align: left">Code UAI de l'établissement</td></tr>
   </table>
   <br><br>
-  FrEduVecteur: <input style="width: 70%" type="text" name="FrEduVecteur" value="3|DUPONT|Paul|1122334|0691234A"></input><br>
+  <table style="width: 100%">
+  <tr><td>FrEduVecteur:</td><td style="width: 70%;"><textarea style="width: 90%; height: 3em;" type="text" name="FrEduVecteur">3|DUPONT|Paul|1122334|0691234A</textarea></td></tr>
+  </table><br>
   <input type="submit" value="Submit" class="btn"></input>
 </form>
 <?php
